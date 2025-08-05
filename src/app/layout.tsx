@@ -77,7 +77,7 @@ export default function RootLayout({
               </div>
               
               <div>
-                <Link href="https://github.com/camilocbarrera/zap-sign" className="text-black/60 hover:text-black/80 transition-colors duration-200 cursor-pointer" target="_blank">
+                <Link href="https://github.com/tomasCalletce/hello-daniel" className="text-black/60 hover:text-black/80 transition-colors duration-200 cursor-pointer" target="_blank">
                   <Github className="h-5 w-5" />
                 </Link>
               </div>
