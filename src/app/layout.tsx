@@ -36,7 +36,7 @@ export default function RootLayout({
             <div className="max-w-2xl mx-auto px-4 py-2 border-x border-black/10">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-mono text-black/60 tracking-wider">
-                  IA HACKATHON — COLOMBIA TECHFEST
+                  IA HACKATHON — COLOMBIA TECH FEST & MAKERS
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-mono text-black/40 tracking-wider">

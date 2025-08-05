@@ -57,9 +57,9 @@ export function Counter({ count, goal, className }: CounterProps) {
           <div className="h-2 pattern-diagonal-subtle"></div>
           <div className="px-3 py-2">
             {/* Custom geometric progress bar */}
-            <div className="h-px bg-black/20 relative overflow-hidden">
+            <div className="h-1.5 bg-black/10 rounded-full relative overflow-hidden">
               <div 
-                className="h-full bg-black transition-all duration-200 ease-out"
+                className="h-full bg-black rounded-full transition-all duration-200 ease-out"
                 style={{ width: `${progressPercentage}%` }}
               />
             </div>
