@@ -21,8 +21,8 @@ export async function GET() {
 
     return NextResponse.json({
       count: currentCount,
-      goal: 1000,
-      percentage: Math.round((currentCount / 1000) * 100),
+      goal: 5000,
+      percentage: Math.round((currentCount / 5000) * 100),
       lastUpdated: counter.updatedAt,
     })
 

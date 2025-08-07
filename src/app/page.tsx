@@ -127,20 +127,19 @@ export default function Home() {
           </p>
           
           <p className="text-xs text-black/40 font-mono tracking-wide">
-            META: {counterData?.goal.toLocaleString() || '1,000'} FIRMAS
+            META: {counterData?.goal.toLocaleString() || '5,000'} FIRMAS
           </p>
         </div>
         
         <Counter 
           count={counterData?.count || 0} 
-          goal={counterData?.goal || 1000}
+          goal={counterData?.goal || 5000}
           className="max-w-xs mx-auto"
         />
       </div>
 
       <div className="mb-6">
         <div className="border border-black/10 bg-white relative">
-          <div className="h-2 pattern-diagonal-subtle border-b border-black/5"></div>
           <div className="p-4 border-x border-black/10">
             <button
               onClick={handleSign}
@@ -157,6 +156,35 @@ export default function Home() {
         <p className="text-xs text-black/40 font-mono tracking-wide max-w-xs mx-auto">
           DATOS SOLO PARA INVITAR A DANIEL
         </p>
+      </div>
+
+      <div className="border-t border-black/10 pt-6 space-y-4">
+        <div className="text-center">
+          <p className="text-xs text-black/50 font-mono tracking-wide mb-3">
+            ÚNETE AL HACKATHON
+          </p>
+          <a
+            href="https://www.colombiatechfest.ai-hackathon.co/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-4 py-2 bg-black/5 hover:bg-black/10 border border-black/20 text-xs font-mono text-black/80 hover:text-black tracking-wide transition-colors"
+          >
+            REGÍSTRATE AQUÍ →
+          </a>
+        </div>
+        
+        <div className="text-center">
+          <a
+            href="https://www.linkedin.com/company/zapsign-br"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-xs font-mono text-black/60 hover:text-black/80 tracking-wide transition-colors"
+          >
+            <span>Sigue a</span>
+            <span className="font-medium">Zap Sign</span>
+            <span>→</span>
+          </a>
+        </div>
       </div>
 
     </div>
