@@ -11,10 +11,15 @@ export async function GET() {
     })
 
     // Count signatures for each referral by checking events
+    // Use DISTINCT on timestamp to avoid counting duplicates within same second
     const referralData = await Promise.all(
       allReferrals.map(async (referral) => {
-        const [signatureCount] = await db
-          .select({ count: count() })
+        // Get all events for this referral
+        const referralEvents = await db
+          .select({
+            timestamp: events.createdAt,
+            payload: events.payload
+          })
           .from(events)
           .where(
             and(
@@ -23,6 +28,35 @@ export async function GET() {
             )
           )
 
+        // Deduplicate by grouping events that happened within 2 seconds of each other
+        const uniqueSignatures = new Set<string>()
+        
+        referralEvents.forEach(event => {
+          try {
+            if (!event.payload) {
+              // If no payload, use event timestamp
+              const timestamp = new Date(event.timestamp).getTime()
+              const roundedTime = Math.floor(timestamp / 5000) * 5000
+              const key = `${referral.refCode}-${roundedTime}`
+              uniqueSignatures.add(key)
+              return
+            }
+            
+            const payload = JSON.parse(event.payload)
+            const timestamp = new Date(payload.timestamp || event.timestamp).getTime()
+            // Round to nearest 5 seconds to group duplicates
+            const roundedTime = Math.floor(timestamp / 5000) * 5000
+            const key = `${referral.refCode}-${roundedTime}`
+            uniqueSignatures.add(key)
+          } catch (e) {
+            // If payload parsing fails, still count it but use event timestamp
+            const timestamp = new Date(event.timestamp).getTime()
+            const roundedTime = Math.floor(timestamp / 5000) * 5000
+            const key = `${referral.refCode}-${roundedTime}`
+            uniqueSignatures.add(key)
+          }
+        })
+
         return {
           id: referral.id,
           refCode: referral.refCode,
@@ -30,7 +64,7 @@ export async function GET() {
           email: referral.email,
           description: referral.description,
           isActive: referral.isActive,
-          totalSignatures: signatureCount.count,
+          totalSignatures: uniqueSignatures.size,
           createdAt: referral.createdAt,
           updatedAt: referral.updatedAt,
         }

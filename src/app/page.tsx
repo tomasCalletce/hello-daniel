@@ -27,6 +27,7 @@ function HomeContent() {
   const [showWidget, setShowWidget] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [referralCode, setReferralCode] = useState<string | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
   const queryClient = useQueryClient()
   const searchParams = useSearchParams()
   
@@ -66,6 +67,14 @@ function HomeContent() {
   }
 
   const handleDocumentSigned = async () => {
+    // Prevent duplicate processing
+    if (isProcessing) {
+      console.log('Already processing signature, ignoring duplicate call')
+      return
+    }
+
+    setIsProcessing(true)
+    
     try {
       // Actually increment the counter in the database
       const response = await fetch('/api/increment-counter', {
@@ -90,11 +99,15 @@ function HomeContent() {
         setTimeout(() => {
           setShowSuccess(false)
           setShowWidget(false)
+          setIsProcessing(false) // Reset processing state
         }, 3000)
+      } else {
+        setIsProcessing(false)
       }
     } catch (error) {
       // Silent error handling - just refresh counter anyway
       queryClient.invalidateQueries({ queryKey: ['counter'] })
+      setIsProcessing(false)
     }
   }
 

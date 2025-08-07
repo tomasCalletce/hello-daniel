@@ -32,6 +32,7 @@ export default function ReferralsPage() {
     email: '',
     description: ''
   })
+  const [copiedId, setCopiedId] = useState<number | null>(null)
   const queryClient = useQueryClient()
 
   const { data: referrals, isLoading } = useQuery<Referral[]>({
@@ -70,9 +71,42 @@ export default function ReferralsPage() {
     createReferralMutation.mutate(formData)
   }
 
-  const copyReferralLink = async (refCode: string) => {
+  const copyReferralLink = async (refCode: string, referralId: number) => {
     const url = `${window.location.origin}?ref=${refCode}`
-    await navigator.clipboard.writeText(url)
+    
+    try {
+      // Modern browsers with clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(url)
+        setCopiedId(referralId)
+        setTimeout(() => setCopiedId(null), 2000)
+        return
+      }
+      
+      // Fallback for mobile/older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = url
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      
+      const successful = document.execCommand('copy')
+      document.body.removeChild(textArea)
+      
+      if (successful) {
+        setCopiedId(referralId)
+        setTimeout(() => setCopiedId(null), 2000)
+      } else {
+        throw new Error('Copy command failed')
+      }
+    } catch (error) {
+      console.error('Failed to copy:', error)
+      // Final fallback - show alert with URL for manual copy
+      alert(`Copy this referral link:\n\n${url}`)
+    }
   }
 
   return (
@@ -186,11 +220,7 @@ export default function ReferralsPage() {
                           {referral.totalSignatures}
                         </span>
                       </div>
-                      {referral.email && (
-                        <p className="text-xs font-mono text-black/60">
-                          {referral.email}
-                        </p>
-                      )}
+
                       {referral.description && (
                         <p className="text-xs font-mono text-black/80">
                           {referral.description}
@@ -201,12 +231,12 @@ export default function ReferralsPage() {
                       </p>
                     </div>
                     <Button
-                      onClick={() => copyReferralLink(referral.refCode)}
+                      onClick={() => copyReferralLink(referral.refCode, referral.id)}
                       variant="outline"
                       size="sm"
-                      className="border-black/20 hover:border-black/40 hover:bg-black/5 text-xs font-mono"
+                      className="border-black/20 hover:border-black/40 hover:bg-black/5 text-xs font-mono min-w-[80px]"
                     >
-                      Copy Link
+                      {copiedId === referral.id ? '✓ Copied!' : 'Copy Link'}
                     </Button>
                   </div>
                 </Card>
@@ -220,7 +250,7 @@ export default function ReferralsPage() {
             href="/"
             className="text-xs font-mono text-black/60 hover:text-black/80 underline"
           >
-            ← Back to Main Page
+            ← Volver a la página principal
           </a>
         </div>
       </div>

@@ -27,9 +27,12 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Count referrals by checking events for this referral code
-    const [referralCount] = await db
-      .select({ count: count() })
+    // Count referrals by checking events for this referral code (with deduplication)
+    const referralEvents = await db
+      .select({
+        timestamp: events.createdAt,
+        payload: events.payload
+      })
       .from(events)
       .where(
         and(
@@ -37,6 +40,37 @@ export async function GET(request: NextRequest) {
           like(events.payload, `%"refBy":"${refCode}"%`)
         )
       )
+
+    // Deduplicate by grouping events that happened within 5 seconds of each other
+    const uniqueSignatures = new Set<string>()
+    
+    referralEvents.forEach(event => {
+      try {
+        if (!event.payload) {
+          // If no payload, use event timestamp
+          const timestamp = new Date(event.timestamp).getTime()
+          const roundedTime = Math.floor(timestamp / 5000) * 5000
+          const key = `${refCode}-${roundedTime}`
+          uniqueSignatures.add(key)
+          return
+        }
+        
+        const payload = JSON.parse(event.payload)
+        const timestamp = new Date(payload.timestamp || event.timestamp).getTime()
+        // Round to nearest 5 seconds to group duplicates
+        const roundedTime = Math.floor(timestamp / 5000) * 5000
+        const key = `${refCode}-${roundedTime}`
+        uniqueSignatures.add(key)
+      } catch (e) {
+        // If payload parsing fails, still count it but use event timestamp
+        const timestamp = new Date(event.timestamp).getTime()
+        const roundedTime = Math.floor(timestamp / 5000) * 5000
+        const key = `${refCode}-${roundedTime}`
+        uniqueSignatures.add(key)
+      }
+    })
+
+    const referralCount = { count: uniqueSignatures.size }
 
     return NextResponse.json({
       referrer: {
