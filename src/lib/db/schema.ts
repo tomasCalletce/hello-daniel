@@ -29,7 +29,22 @@ export const events = pgTable('events', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 })
 
+export const referrals = pgTable('referrals', {
+  id: serial('id').primaryKey(),
+  refCode: text('ref_code').notNull(),
+  name: text('name').notNull(),
+  email: text('email'),
+  description: text('description'),
+  isActive: boolean('is_active').default(true).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  refCodeIdx: uniqueIndex('referrals_ref_code_idx').on(table.refCode),
+}))
+
 export type Signer = typeof signers.$inferSelect
 export type NewSigner = typeof signers.$inferInsert
 export type Counter = typeof counters.$inferSelect
 export type Event = typeof events.$inferSelect
+export type Referral = typeof referrals.$inferSelect
+export type NewReferral = typeof referrals.$inferInsert

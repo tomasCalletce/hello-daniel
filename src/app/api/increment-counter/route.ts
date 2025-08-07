@@ -1,10 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { counters, events } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
   try {
+    const body = await request.json().catch(() => ({}))
+    const { refBy } = body
+
     // Get current counter
     let counter = await db.query.counters.findFirst({
       orderBy: (counters, { desc }) => [desc(counters.id)],
@@ -28,18 +31,17 @@ export async function POST() {
         .returning()
     }
 
-    // Log the increment event
+    // Log the increment event with referral info
     await db.insert(events).values({
       type: 'counter_increment',
       payload: JSON.stringify({
         oldCount: newCount - 1,
         newCount: newCount,
         source: 'iframe_signing',
+        refBy: refBy || null,
         timestamp: new Date().toISOString(),
       }),
     })
-
-    // Counter incremented successfully
 
     return NextResponse.json({
       success: true,

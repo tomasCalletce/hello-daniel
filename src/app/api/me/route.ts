@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { signers } from '@/lib/db/schema'
-import { eq, count } from 'drizzle-orm'
+import { referrals, events } from '@/lib/db/schema'
+import { eq, count, and, like } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,9 +15,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Find the referrer
-    const referrer = await db.query.signers.findFirst({
-      where: (signers, { eq }) => eq(signers.refCode, refCode),
+    // Look for referrer in referrals table
+    const referrer = await db.query.referrals.findFirst({
+      where: (referrals, { eq }) => eq(referrals.refCode, refCode),
     })
 
     if (!referrer) {
@@ -27,11 +27,16 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Count referrals (people who signed using this referral code)
+    // Count referrals by checking events for this referral code
     const [referralCount] = await db
       .select({ count: count() })
-      .from(signers)
-      .where(eq(signers.refBy, refCode))
+      .from(events)
+      .where(
+        and(
+          eq(events.type, 'counter_increment'),
+          like(events.payload, `%"refBy":"${refCode}"%`)
+        )
+      )
 
     return NextResponse.json({
       referrer: {
